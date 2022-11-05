@@ -27,9 +27,26 @@ app.use('/', indexRouter);
  * TODO Add any additional endpoints here, and implement them in api.js
  */
 
-// testing testing
+
 
 app.get('/creator', api.creator);
+
+//list of all campaigns
+app.get('/campaign', api.indexCampaign)
+
+//get specific campaign
+app.get('/campaign/:id', api.findOneCampaign)
+
+// create new campaign
+app.post('/campaign', api.createCampaign)
+
+// add media to specific campaign
+app.post('/campaign/:id/media', api.addMediaToCompaign)
+
+//add pricing to specific campaign
+app.post('/campaign/:id/pricing', api.addPricingToCampaign)
+
+app.get('/campaign/:campaign_id/publisher/:publisher_id/timestamp', api.removePublisher)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

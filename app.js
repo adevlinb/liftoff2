@@ -34,7 +34,7 @@ app.get('/creator', api.creator);
 //list of all campaigns
 app.get('/campaign', api.indexCampaign)
 
-//get specific campaign
+//get specific campaign... THIS ROUTE WILL SEND BACK INFO FOR FIGMA FILE
 app.get('/campaign/:id', api.findOneCampaign)
 
 // create new campaign
@@ -46,7 +46,9 @@ app.post('/campaign/:id/media', api.addMediaToCompaign)
 //add pricing to specific campaign
 app.post('/campaign/:id/pricing', api.addPricingToCampaign)
 
-app.get('/campaign/:campaign_id/publisher/:publisher_id/timestamp', api.removePublisher)
+app.get('/campaign/:campaign_id/creator/:creator_id', api.addCreatorToCampaign)
+
+app.get('/campaign/:campaign_id/publisher/:publisher_id/timestamp', api.checkToRemovePublisher)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

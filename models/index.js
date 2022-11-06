@@ -28,9 +28,14 @@ if (!global.hasOwnProperty('db')) {
         foreignKey: 'campaign_id',
     });
 
-    global.db.Campaign.hasMany(global.db.Creator, {
-        onDelete: 'cascade',
-        foreignKey: 'campaign_id',
+    global.db.Campaign.belongsToMany(global.db.Creator, {
+        through: "campaign_creator",
+        uniqueKey: "campaign_id"
+    });
+
+    global.db.Creator.belongsToMany(global.db.Campaign, {
+        through: "campaign_creator",
+        foreignKey: 'creator_id',
     });
 
 

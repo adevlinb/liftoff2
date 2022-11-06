@@ -17,16 +17,12 @@ exports.creator = async (req, res) => {
     }
 };
 
-/*
-    TODO implement new endpoints here
- */
-
 exports.indexCampaign = async (req, res) => {
     try {
-        const allCampaigns = await db.Campaign.findAll({where: {id: req.params.id}});
+        const allCampaigns = await db.Campaign.findAll();
         res.status(200).json({
             status: 200,
-            allCampaigns
+            allCampaigns,
         });
     } catch (err) {
         console.log("Error is User: " + err);
@@ -35,22 +31,27 @@ exports.indexCampaign = async (req, res) => {
 }
 exports.findOneCampaign = async (req, res) => {
     try {
+        const campaignId = req.params.id
         const campaign = await db.Campaign.findOne({
-            where: {id: req.params.id},
-            include: {model: db.Media, where: {campaign_id: req.pareams.id}},
-            include: {model: db.Pricing, where: {campaign_id: req.pareams.id}},
-            include: {model: db.Creator, where: {campaign_id: req.pareams.id}},
+            where: {id: campaignId},
+            include: [ {model: db.Media}, {model: db.Pricing}, {model: db.Creator} ]
         });
 
-        if (!campaign.creator.includes(req.user._id)) {
-            res.status(400).json({
-                status: 400,
-                error: "Authoization Not Allowed"
-            });
-        } else {
+        const averages =  await campaign.average_pay_per_install
+        let creatorInCampaign = campaign.creator.some(function(creator) {
+            return creator.id === req.user._id
+        })
+
+        if(creatorInCampaign || campaign.publisherId === req.user._id) {
             res.status(200).json({
                 status: 200,
-                campaign
+                campaign,
+                averages
+            })
+        } else {
+            res.status(400).json({
+                status: 400,
+                error: "Authorization Not Allowed"
             })
         }
     } catch (err) {
@@ -61,7 +62,11 @@ exports.findOneCampaign = async (req, res) => {
 
 exports.createCampaign = async (req, res) => {
     try {
-        console.log("create campaign", req.body);
+        req.body.publisherId = req.user._id;
+        if (req.body.remove_At === null) {
+            const date = new Date();
+            req.body.remove_At = date.setDate(date.getDate() + 1);
+        }
         const newCampaign = await db.Campaign.create(req.body);
         res.status(200).json({
             status: 200,
@@ -76,7 +81,6 @@ exports.createCampaign = async (req, res) => {
 exports.addMediaToCompaign = async (req, res) => {
     try {
         req.body.campaign_id = req.params.id;
-        console.log(req.body);
         const newMedia = await db.Media.create(req.body);
         res.status(200).json({
             status: 200,
@@ -91,7 +95,6 @@ exports.addMediaToCompaign = async (req, res) => {
 exports.addPricingToCampaign = async (req, res) => {
     try {
         req.body.campaign_id = req.params.id;
-        console.log(req.body, "pricing");
         const newPricing = await db.Pricing.create(req.body);
         res.status(200).json({
             status: 200,
@@ -102,15 +105,36 @@ exports.addPricingToCampaign = async (req, res) => {
         res.sendStatus(400);
     }
 }
-exports.removePublisher = async (req, res) => {
+exports.addCreatorToCampaign = async (req, res) => {
+    try {
+        const campaign = await db.Campaign.findOne({where: { id: req.params.campaign_id }});
+        await campaign.addCreator(req.params.creator_id)
+        await campaign.save()
+        const updatedCampaign = await db.Campaign.findOne({
+            where: { id: req.params.campaign_id },
+            include: [{ model: db.Media }, { model: db.Pricing }, { model: db.Creator }]
+        });
+        res.status(200).json({
+            status: 200,
+            updatedCampaign
+        });
+    } catch (err) {
+        console.log("Error is User: " + err);
+        res.sendStatus(400);
+    }
+}
+
+
+exports.checkToRemovePublisher = async (req, res) => {
     try {
         const publisherId = req.params.publisher_id;
         const campaignId = req.params.campaign_id;
-        const timestamp = req.query.remove_at
-        const today = new Date();
         const campaign = await db.Campaign.findOne({where: { id: campaignId }})
-        
-        if (campaign.remove_At >= today);
-        
+        const date = campaign.remove_At || new Date();
+        if (campaign.remove_At <= date) campaign.publisherId = null;
+        campaign.save();
 
+    } catch (err) {
+        console.log("Error is User: " + err);
+    }
 }

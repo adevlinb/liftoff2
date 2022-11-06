@@ -12,11 +12,11 @@ module.exports = function (sequelize, DataTypes) {
             average_pay_per_install: { 
                 type: DataTypes.VIRTUAL,
                 get() {
-                    return findAvg(this.id)
+                    return findAvg(this.id);
                     async function findAvg (id) {
                         let creatorsAvg = [];
                         const installs = await db.Install.findAll();
-                        const campaign = await db.Campaign.findOne({ where: { id: id }, include: [{model: db.Pricing}, {model: db.Creator}]})
+                        const campaign = await db.Campaign.findOne({ where: { id: id }, include: [{model: db.Pricing}, {model: db.Creator}]});
                         await campaign.Creators.forEach(function(creator) {
                             let avg = 0;
                             let numOfInstalls = 0;
@@ -31,7 +31,7 @@ module.exports = function (sequelize, DataTypes) {
                                 }
                             })
                             avg = avg / numOfInstalls; 
-                            creatorsAvg.push({creatorName: `${creator.dataValues.firstname} ${creator.dataValues.lastname}`, avgPrice: avg})
+                            creatorsAvg.push({creatorName: `${creator.dataValues.firstname} ${creator.dataValues.lastname}`, avgPrice: avg});
                         })
                     return await creatorsAvg;
                     }

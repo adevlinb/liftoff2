@@ -31,15 +31,15 @@ exports.indexCampaign = async (req, res) => {
 }
 exports.findOneCampaign = async (req, res) => {
     try {
-        const campaignId = req.params.id
+        const campaignId = req.params.id;
         const campaign = await db.Campaign.findOne({
             where: {id: campaignId},
             include: [ {model: db.Media}, {model: db.Pricing}, {model: db.Creator} ]
         });
 
-        const averages =  await campaign.average_pay_per_install
+        const averages =  await campaign.average_pay_per_install;
         let creatorInCampaign = campaign.creator.some(function(creator) {
-            return creator.id === req.user._id
+            return creator.id === req.user._id;
         })
 
         if(creatorInCampaign || campaign.publisherId === req.user._id) {
@@ -108,8 +108,8 @@ exports.addPricingToCampaign = async (req, res) => {
 exports.addCreatorToCampaign = async (req, res) => {
     try {
         const campaign = await db.Campaign.findOne({where: { id: req.params.campaign_id }});
-        await campaign.addCreator(req.params.creator_id)
-        await campaign.save()
+        await campaign.addCreator(req.params.creator_id);
+        await campaign.save();
         const updatedCampaign = await db.Campaign.findOne({
             where: { id: req.params.campaign_id },
             include: [{ model: db.Media }, { model: db.Pricing }, { model: db.Creator }]
@@ -129,11 +129,10 @@ exports.checkToRemovePublisher = async (req, res) => {
     try {
         const publisherId = req.params.publisher_id;
         const campaignId = req.params.campaign_id;
-        const campaign = await db.Campaign.findOne({where: { id: campaignId }})
+        const campaign = await db.Campaign.findOne({where: { id: campaignId }});
         const date = campaign.remove_At || new Date();
         if (campaign.remove_At <= date) campaign.publisherId = null;
         campaign.save();
-
     } catch (err) {
         console.log("Error is User: " + err);
     }
